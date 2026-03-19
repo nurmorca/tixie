@@ -1,6 +1,6 @@
 # event ticketing system
 
-a microservices-based event ticketing platform where users can register, browse events, and book tickets. the goal is to build something that handles the full ticketing flow — from user auth all the way to booking and seat management — while keeping each concern in its own service.
+a microservices-based event ticketing platform where users can register, browse events, and book tickets. the goal is to build something that handles the full ticketing flow, from user auth all the way to booking and seat management, while keeping each concern in its own service.
 
 ---
 
