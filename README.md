@@ -9,7 +9,7 @@ a microservices-based event ticketing platform where users can register, browse 
 - user service: spring boot (java) + postgresql
 - ticket service: go + postgresql + redis
 - booking service (coming up): spring boot (java) + postgresql
-- activity service (cpming up): go + mongodb
+- activity service (coming up): go + mongodb
 
 
 **infrastructure:** docker + docker compose, rabbitmq (async messaging), redis (seat locking)
@@ -18,7 +18,11 @@ a microservices-based event ticketing platform where users can register, browse 
 
 ## progress
 
-### v0.1 — week 1
+### v0.2 - week 2
+- ticket service: both event and ticket crud completed
+- booking service: in progress
+
+### v0.1 - week 1
 - user service: basic crud done
 - ticket inventory: events crud in progress
 - services are running independently via docker compose

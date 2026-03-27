@@ -3,13 +3,9 @@ package domain
 import "time"
 
 type Ticket struct {
-	TiID          int64      `db:"TI_ID" json:"id"`
-	TiEventID     string     `db:"TI_EVENT_ID" json:"event_id"`
-	TiSeatNumber  string     `db:"TI_SEAT_NUMBER" json:"seat_number"`
-	TiSection     string     `db:"TI_SECTION" json:"section"`
-	TiPrice       float64    `db:"TI_PRICE" json:"price"`
-	TiStatus      string     `db:"TI_STATUS" json:"status"` // "available", "locked", "sold"
-	TiLockedBy    *string    `db:"TI_LOCKED_BY" json:"locked_by,omitempty"`
-	TiLockedUntil *time.Time `db:"TI_LOCKED_UNTIL" json:"locked_until,omitempty"`
-	TiCreatedAt   time.Time  `db:"TI_CREATED_AT" json:"created_at"`
+	TiID        int64     `db:"ti_id" json:"id"`
+	TiEventID   int64     `db:"ti_event_id" json:"event_id"`
+	TiSeatID    int64     `db:"ti_seat_id" json:"seat_id"`
+	TiUserID    int64     `db:"ti_user_id" json:"user_id"`
+	TiCreatedAt time.Time `db:"ti_created_at" json:"created_at"`
 }

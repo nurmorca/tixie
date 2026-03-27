@@ -1,5 +1,9 @@
 services:
-  postgres:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  user-postgres:
     image: postgres:15
     environment:
       POSTGRES_DB: userdb
@@ -15,11 +19,11 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/userdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-postgres:5432/userdb
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin123
     depends_on:
-      - postgres
+      - user-postgres
 
   ticket-postgres:
     image: postgres:15
