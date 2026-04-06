@@ -22,8 +22,8 @@ public class Booking {
     @Column(name="BO_CREATED_AT")
     private Timestamp boCreatedAt;
 
-    @OneToMany(fetch = FetchType.LAZY) // FetchType.EAGER fetches the associated Product automatically
-    @JoinColumn(name = "BI_BOOKING_ID") // Specifies the foreign key column in the 'transaction' table
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "BI_BOOKING_ID")
     private List<BookingItems> boBookingItems;
 
     public List<BookingItems> getBookingItems() {

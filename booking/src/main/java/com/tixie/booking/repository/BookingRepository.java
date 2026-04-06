@@ -11,6 +11,12 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     // JPQL Join on the 'product' relationship field
     @Query("SELECT b FROM booking b LEFT JOIN B.boBookingItems bi ON b.boId = bi.biBookingId WHERE b.boId = :bookingId")
-    List<Booking> findBookingAndItems(@Param("bookingId") int bookingId);
+    Booking findBookingAndItemsById(@Param("bookingId") int bookingId);
+
+    @Query("SELECT b FROM booking b LEFT JOIN B.boBookingItems bi ON b.boId = bi.biBookingId")
+    List<Booking> findBookingAndItems();
+
+    @Query("SELECT b.boStatus FROM booking b LEFT JOIN B.boBookingItems bi ON b.boId = bi.biBookingId WHERE b.boId = :bookingId")
+    String getBookingStatusById(@Param("bookingId") int bookingId);
 
 }

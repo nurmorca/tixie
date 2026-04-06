@@ -2,18 +2,29 @@ package com.tixie.booking.service;
 
 import com.tixie.booking.data.dto.BookingRequestDTO;
 import com.tixie.booking.data.entity.Booking;
+import com.tixie.booking.repository.BookingRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Optional;
 
 public class BookingServiceImpl implements BookingService {
-    @Override
-    public List<Booking> getAllBookings() {
-        return List.of();
+
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    public BookingServiceImpl (BookingRepository bookingRepository) {
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
-    public Booking getBookingById(int BookingId) {
-        return null;
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findBookingAndItems();
+    }
+
+    @Override
+    public Booking getBookingById(int bookingId) {
+        return bookingRepository.findBookingAndItemsById(bookingId);
     }
 
     @Override
@@ -22,8 +33,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public String getStatusForBooking(int BookingId) {
-        return "";
+    public String getStatusForBooking(int bookingId) {
+        return bookingRepository.getBookingStatusById(bookingId);
     }
 
     @Override
