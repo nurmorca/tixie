@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name="BOOKING")
@@ -22,8 +23,7 @@ public class Booking {
     @Column(name="BO_CREATED_AT")
     private Timestamp boCreatedAt;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "BI_BOOKING_ID")
+    @OneToMany(mappedBy = "booking")
     private List<BookingItems> boBookingItems;
 
     public List<BookingItems> getBookingItems() {

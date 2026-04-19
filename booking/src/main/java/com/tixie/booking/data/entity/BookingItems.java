@@ -27,6 +27,10 @@ public class BookingItems {
     @Column(name="BO_CREATED_AT", nullable = false)
     private Timestamp biCreatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "BI_BOOKING_ID", referencedColumnName = "BO_ID", nullable = false, insertable = false, updatable = false)
+    private Booking booking;
+
     public int getBiId() {
         return biId;
     }
@@ -81,5 +85,13 @@ public class BookingItems {
 
     public void setBiCreatedAt(Timestamp biCreatedAt) {
         this.biCreatedAt = biCreatedAt;
+    }
+
+    public Booking getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
     }
 }

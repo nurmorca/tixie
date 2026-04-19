@@ -3,6 +3,7 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+
   user-postgres:
     image: postgres:15
     environment:
@@ -12,7 +13,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - user-postgres-data:/var/lib/postgresql/data
 
   user:
     build: ./user
@@ -37,6 +38,35 @@ services:
       - ticket-postgres-data:/var/lib/postgresql/data
       - ./ticket/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  ticket:                          # ✅ ADD THIS - you're missing the ticket service!
+    build: ./ticket
+    ports:
+      - "8081:8081"
+    environment:
+      DB_HOST: ticket-postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      DB_NAME: ticketdb
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 8081
+    depends_on:
+      - ticket-postgres
+      - redis
+
+  booking-postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: bookingdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5435:5432"
+    volumes:
+      - booking-postgres-data:/var/lib/postgresql/data
+
 volumes:
-  postgres-data:
+  user-postgres-data:              # ✅ FIXED - was "postgres-data"
   ticket-postgres-data:
+  booking-postgres-data:           # ✅ ADD THIS - was missing
