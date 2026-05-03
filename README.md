@@ -18,17 +18,22 @@ a microservices-based event ticketing platform where users can register, browse 
 
 ## progress
 
-**what's cooking this week:** will implement the plumbing for services to work together!
+**what's cooking:** as of now, there is some inconsistency between services booking and ticket. will add features to both so they work within rhythm. will also be working on user service auth issues.
 
-## v0.3 - week 3
+## v0.4
+- added restclient and its plumbing so that services can talk to each other (in booking service)
+- removed event_seat dto from ticket as it feels like "over-engineering"
+- removed reserving tickets for users in ticket service as it is now fully booking service's job.
+
+## v0.3 
 - booking service up and running with **lots** of bugs to fix, later
 - ticket service is now fully on docker
 
-### v0.2 - week 2
+### v0.2 
 - ticket service: both event and ticket crud completed
 - booking service: in progress
 
-### v0.1 - week 1
+### v0.1 
 - user service: basic crud done
 - ticket inventory: events crud in progress
 - services are running independently via docker compose
