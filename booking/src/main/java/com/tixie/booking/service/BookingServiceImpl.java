@@ -1,9 +1,13 @@
 package com.tixie.booking.service;
 
+import com.tixie.booking.client.UserApiClient;
 import com.tixie.booking.data.dto.BookingRequestDTO;
+import com.tixie.booking.data.dto.UserDTO;
 import com.tixie.booking.data.entity.Booking;
 import com.tixie.booking.data.entity.BookingItems;
 import com.tixie.booking.repository.BookingRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +19,13 @@ import java.util.Optional;
 public class BookingServiceImpl implements BookingService {
 
     private BookingRepository bookingRepository;
+    private UserApiClient userApiClient;
+    private Logger logger = LoggerFactory.getLogger(BookingServiceImpl.class);
 
     @Autowired
-    public BookingServiceImpl (BookingRepository bookingRepository) {
+    public BookingServiceImpl (BookingRepository bookingRepository, UserApiClient userApiClient) {
         this.bookingRepository = bookingRepository;
+        this.userApiClient = userApiClient;
     }
 
     @Override
@@ -49,7 +56,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking createBooking(BookingRequestDTO bookingRequestDTO) {
-        // implement checking ticket and user logic here.
+        if (verifyUserExist(bookingRequestDTO.getUserId()) == null) {
+            return null;
+        }
         BookingItems item = new BookingItems();
         item.setBiEventId(bookingRequestDTO.getEventId());
         item.setBiTicketId(bookingRequestDTO.getTicketId());
@@ -59,5 +68,12 @@ public class BookingServiceImpl implements BookingService {
         newBooking.setBoTotalPrice(BigDecimal.valueOf(888L)); //TODO: fix after service connection
         newBooking.setBookingItems(List.of(item));
         return bookingRepository.save(newBooking);
+    }
+
+    private UserDTO verifyUserExist(int userId) {
+        if (userId == 0) {
+            return null;
+        }
+        return userApiClient.getUserById(userId);
     }
 }

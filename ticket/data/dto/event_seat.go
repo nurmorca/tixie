@@ -1,5 +1,6 @@
 package dto
 
+/*
 import "github.com/shopspring/decimal"
 
 type EventSeatDTO struct {
@@ -10,3 +11,4 @@ type EventSeatDTO struct {
 	Status     string          `db:"es_status" json:"seat_status"`
 	Price      decimal.Decimal `db:"es_price" json:"price"`
 }
+*/

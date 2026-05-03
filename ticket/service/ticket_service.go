@@ -19,14 +19,14 @@ type ITicketService interface {
 	GetEventById(eventId int64) (*domain.Event, error)
 	DeleteEvent(eventId int64) error
 	UpdateDescription(eventId int64, description string) error
-	GetAvailableSeatsForEvent(eventId int64) ([]dto.EventSeatDTO, error)
-	GetSeatsForEvent(eventId int64) ([]dto.EventSeatDTO, error)
+	GetAvailableTicketsForEvent(eventId int64) ([]domain.Ticket, error)
+	GetTicketsForEvent(eventId int64) ([]domain.Ticket, error)
 	LockSeat(ctx context.Context, lockSeatRequest dto.TicketReservationDTO) error
 	ReleaseSeat(ctx context.Context, releaseSeatRequest dto.TicketReservationDTO) error
-	GetAllTicketsForEvent(eventId int64) ([]dto.UserTicketDTO, error)
-	CreateTicket(ticketReservation dto.TicketReservationDTO) error
-	GetAllTicketsForUser(userId int64) ([]dto.UserTicketDTO, error)
-	GetUserTicketsForEvent(eventId int64, userId int64) ([]dto.UserTicketDTO, error)
+	GetAllTicketsForEvent(eventId int64) ([]dto.TicketDTO, error)
+	// CreateTicket(ticketReservation dto.TicketReservationDTO) error
+	// GetAllTicketsForUser(userId int64) ([]dto.UserTicketDTO, error)
+	// GetUserTicketsForEvent(eventId int64, userId int64) ([]dto.UserTicketDTO, error)
 }
 
 type TicketService struct {
@@ -41,7 +41,7 @@ func NewTicketService(repository repository.ITicketRepository, redisClient *redi
 	}
 }
 
-func (ticketService *TicketService) GetUserTicketsForEvent(eventId int64, userId int64) ([]dto.UserTicketDTO, error) {
+/* func (ticketService *TicketService) GetUserTicketsForEvent(eventId int64, userId int64) ([]dto.UserTicketDTO, error) {
 	if userId == 0 {
 		return nil, errors.New("user id is not valid")
 	}
@@ -56,16 +56,16 @@ func (ticketService *TicketService) GetAllTicketsForUser(userId int64) ([]dto.Us
 		return nil, errors.New("user id is not valid")
 	}
 	return ticketService.ticketRepository.GetAllTicketsForUser(userId)
-}
+} */
 
-func (ticketService *TicketService) GetAllTicketsForEvent(eventId int64) ([]dto.UserTicketDTO, error) {
+func (ticketService *TicketService) GetAllTicketsForEvent(eventId int64) ([]dto.TicketDTO, error) {
 	if eventId == 0 {
 		return nil, errors.New("event id is not valid")
 	}
 	return ticketService.ticketRepository.GetAllTicketsForEvent(eventId)
 }
 
-func (ticketService *TicketService) CreateTicket(ticketReservation dto.TicketReservationDTO) error {
+/* func (ticketService *TicketService) CreateTicket(ticketReservation dto.TicketReservationDTO) error {
 	ctx := context.Background()
 	if !isTicketReservationRequestValid(ticketReservation) {
 		return errors.New("please make sure all event id, seat id and user id correctly entered")
@@ -92,20 +92,20 @@ func (ticketService *TicketService) CreateTicket(ticketReservation dto.TicketRes
 	}
 
 	return ticketService.releaseSeat(ctx, ticketReservation)
-}
+} */
 
-func (ticketService *TicketService) GetSeatsForEvent(eventId int64) ([]dto.EventSeatDTO, error) {
+func (ticketService *TicketService) GetTicketsForEvent(eventId int64) ([]domain.Ticket, error) {
 	if eventId == 0 {
 		return nil, errors.New("event id is not valid")
 	}
-	return ticketService.ticketRepository.GetSeatsForEvent(eventId, false)
+	return ticketService.ticketRepository.GetTicketsForEvent(eventId, false)
 }
 
-func (ticketService *TicketService) GetAvailableSeatsForEvent(eventId int64) ([]dto.EventSeatDTO, error) {
+func (ticketService *TicketService) GetAvailableTicketsForEvent(eventId int64) ([]domain.Ticket, error) {
 	if eventId == 0 {
 		return nil, errors.New("event id is not valid")
 	}
-	return ticketService.ticketRepository.GetSeatsForEvent(eventId, true)
+	return ticketService.ticketRepository.GetTicketsForEvent(eventId, true)
 }
 
 func (ticketService *TicketService) CreateEvent(event domain.Event) error {

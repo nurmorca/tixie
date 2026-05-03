@@ -5,6 +5,15 @@ public class BookingRequestDTO {
     private int ticketId;
     private int eventId;
     private int userId;
+    private int seatId;
+
+    public int getSeatId() {
+        return seatId;
+    }
+
+    public void setSeatId(int seatId) {
+        this.seatId = seatId;
+    }
 
     public int getTicketId() {
         return ticketId;

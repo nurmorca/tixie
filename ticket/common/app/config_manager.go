@@ -21,8 +21,8 @@ func NewConfigManager() *ConfigManager {
 
 func getPostgreSqlConfig() database.Config {
 	return database.Config{
-		Host:                  "localhost",
-		Port:                  "5434",
+		Host:                  "ticket-postgres",
+		Port:                  "5432",
 		Username:              "admin",
 		Password:              "admin123",
 		DBname:                "ticketdb",

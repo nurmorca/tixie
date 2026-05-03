@@ -29,17 +29,17 @@ func (ticketController *TicketController) RegisterRoutes(e *echo.Echo) {
 	e.DELETE("/api/event/:id", ticketController.DeleteEvent)
 	e.GET("/api/event/:id/seats", ticketController.GetSeatsForEvent)
 	e.GET("/api/event/:id/tickets", ticketController.GetAllTicketsForEvent)
-	e.GET("/api/event/:eventId/user/:userId", ticketController.GetUserTicketsForEvent)
+	//	e.GET("/api/event/:eventId/user/:userId", ticketController.GetUserTicketsForEvent)
 
 	// ticket handling
 	e.GET("/api/ticket/available/:eventId", ticketController.GetAvailableSeatsForEvent)
 	e.POST("/api/ticket/lock", ticketController.LockSeat)
 	e.POST("/api/ticket/release", ticketController.ReleaseSeat)
-	e.POST("/api/ticket/confirm", ticketController.CreateTicket)
-	e.GET("/api/ticket/user/:id", ticketController.GetAllTicketsForUser)
+	// e.POST("/api/ticket/confirm", ticketController.CreateTicket)
+	//	e.GET("/api/ticket/user/:id", ticketController.GetAllTicketsForUser)
 }
 
-func (ticketController TicketController) GetUserTicketsForEvent(c echo.Context) error {
+/* func (ticketController TicketController) GetUserTicketsForEvent(c echo.Context) error {
 	param1 := c.Param("eventId")
 	eventId, _ := strconv.ParseInt(param1, 10, 64)
 	param2 := c.Param("userId")
@@ -52,9 +52,9 @@ func (ticketController TicketController) GetUserTicketsForEvent(c echo.Context) 
 	}
 
 	return c.JSON(http.StatusOK, tixes)
-}
+} */
 
-func (ticketController TicketController) GetAllTicketsForUser(c echo.Context) error {
+/*func (ticketController TicketController) GetAllTicketsForUser(c echo.Context) error {
 	param := c.Param("id")
 	userId, _ := strconv.ParseInt(param, 10, 64)
 
@@ -65,7 +65,7 @@ func (ticketController TicketController) GetAllTicketsForUser(c echo.Context) er
 	}
 
 	return c.JSON(http.StatusOK, tixes)
-}
+} */
 
 func (ticketController TicketController) GetAllTicketsForEvent(c echo.Context) error {
 	param := c.Param("id")
@@ -80,7 +80,7 @@ func (ticketController TicketController) GetAllTicketsForEvent(c echo.Context) e
 	return c.JSON(http.StatusOK, tixes)
 }
 
-func (ticketController TicketController) CreateTicket(c echo.Context) error {
+/* func (ticketController TicketController) CreateTicket(c echo.Context) error {
 	var purchaseTicketRequest dto.TicketReservationDTO
 	err := c.Bind(&purchaseTicketRequest)
 	if err != nil {
@@ -92,13 +92,13 @@ func (ticketController TicketController) CreateTicket(c echo.Context) error {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 	return c.NoContent(http.StatusCreated)
-}
+} */
 
 func (ticketController TicketController) GetSeatsForEvent(c echo.Context) error {
 	param := c.Param("id")
 	eventId, _ := strconv.ParseInt(param, 10, 64)
 
-	seats, err := ticketController.ticketService.GetSeatsForEvent(eventId)
+	seats, err := ticketController.ticketService.GetTicketsForEvent(eventId)
 
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err.Error())
@@ -111,7 +111,7 @@ func (ticketController TicketController) GetAvailableSeatsForEvent(c echo.Contex
 	param := c.Param("eventId")
 	eventId, _ := strconv.ParseInt(param, 10, 64)
 
-	seats, err := ticketController.ticketService.GetAvailableSeatsForEvent(eventId)
+	seats, err := ticketController.ticketService.GetAvailableTicketsForEvent(eventId)
 
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err.Error())

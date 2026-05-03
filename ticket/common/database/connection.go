@@ -3,14 +3,13 @@ package database
 import (
 	"context"
 	"fmt"
+	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/labstack/gommon/log"
 )
 
 func GetConnectionPool(context context.Context, config Config) *pgxpool.Pool {
-	connString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s pool_max_conns=%s pool_max_conn_idle_time=%s",
+	connString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s pool_max_conns=%s pool_max_conn_idle_time=%s sslmode=disable",
 		config.Host,
 		config.Port,
 		config.Username,
@@ -24,12 +23,27 @@ func GetConnectionPool(context context.Context, config Config) *pgxpool.Pool {
 		panic(parseConfigError)
 	}
 
-	connConfig.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeCacheDescribe
-	conn, err := pgxpool.NewWithConfig(context, connConfig) // actually makes the connection.
-	if err != nil {
-		log.Error("unable to connect db: %v\n", err)
-		panic(err)
+	var pool *pgxpool.Pool
+	var err error
+
+	// Retry loop to handle the "Fast Shutdown" window
+	for i := 0; i < 15; i++ {
+		pool, err = pgxpool.NewWithConfig(context, connConfig)
+		if err == nil {
+			// Ping actually attempts a connection
+			err = pool.Ping(context)
+			if err == nil {
+				return pool // Success!
+			}
+		}
+
+		if pool != nil {
+			pool.Close()
+		}
+		fmt.Printf("Database starting up... retrying in 1s (attempt %d)\n", i+1)
+		time.Sleep(1 * time.Second)
 	}
 
-	return conn
+	panic(fmt.Sprintf("Could not connect to database after retries: %v", err))
+	return nil
 }

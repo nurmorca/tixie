@@ -26,5 +26,5 @@ func main() {
 	for _, r := range e.Routes() {
 		fmt.Printf("ROUTE: %s %s\n", r.Method, r.Path)
 	}
-	e.Start("localhost:8081")
+	e.Logger.Fatal(e.Start(":8081"))
 }
