@@ -1,10 +1,13 @@
 package com.tixie.booking.service;
 
+import com.tixie.booking.client.TicketApiClient;
 import com.tixie.booking.client.UserApiClient;
 import com.tixie.booking.data.dto.BookingRequestDTO;
+import com.tixie.booking.data.dto.ConfirmBookingDTO;
 import com.tixie.booking.data.dto.UserDTO;
 import com.tixie.booking.data.entity.Booking;
 import com.tixie.booking.data.entity.BookingItems;
+import com.tixie.booking.repository.BookingItemRepository;
 import com.tixie.booking.repository.BookingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,13 +23,17 @@ import java.util.Optional;
 public class BookingServiceImpl implements BookingService {
 
     private BookingRepository bookingRepository;
+    private BookingItemRepository bookingItemRepository;
     private UserApiClient userApiClient;
     private Logger logger = LoggerFactory.getLogger(BookingServiceImpl.class);
+    private TicketApiClient ticketApiClient;
 
     @Autowired
-    public BookingServiceImpl (BookingRepository bookingRepository, UserApiClient userApiClient) {
+    public BookingServiceImpl (BookingRepository bookingRepository, BookingItemRepository bookingItemRepository, UserApiClient userApiClient, TicketApiClient ticketApiClient) {
         this.bookingRepository = bookingRepository;
+        this.bookingItemRepository = bookingItemRepository;
         this.userApiClient = userApiClient;
+        this.ticketApiClient = ticketApiClient;
     }
 
     @Override
@@ -59,15 +67,34 @@ public class BookingServiceImpl implements BookingService {
         if (verifyUserExist(bookingRequestDTO.getUserId()) == null) {
             return null;
         }
-        BookingItems item = new BookingItems();
-        item.setBiEventId(bookingRequestDTO.getEventId());
-        item.setBiTicketId(bookingRequestDTO.getTicketId());
         Booking newBooking = new Booking();
         newBooking.setBoUserId(bookingRequestDTO.getUserId());
-        newBooking.setBoStatus("BOOKED");
-        newBooking.setBoTotalPrice(BigDecimal.valueOf(888L)); //TODO: fix after service connection
-        newBooking.setBookingItems(List.of(item));
-        return bookingRepository.save(newBooking);
+        newBooking.setBoStatus("WAITING_CONFIRMATION");
+        newBooking.setBoTotalPrice(BigDecimal.valueOf(888L));
+       Booking booking =  bookingRepository.save(newBooking);
+        for (int id: bookingRequestDTO.getTicketIds()) {
+            BookingItems item = new BookingItems();
+            item.setBiEventId(bookingRequestDTO.getEventId());
+            item.setBiTicketId(id);
+            item.setBiBookingId(booking.getBoId());
+            item.setBiPrice(newBooking.getBoTotalPrice());
+            bookingItemRepository.save(item);
+        }
+        return booking;
+    }
+
+    @Override
+    public List<Booking> confirmBooking(ConfirmBookingDTO confirmBookingDTO) {
+        Booking booking = getBookingById(confirmBookingDTO.)
+        ticketApiClient.confirmBooking(confirmBookingDTO);
+        List<Booking> bookings = new ArrayList<>();
+
+       for (int bookingId : confirmBookingDTO.getTicketIds()) {
+           booking = getBookingById(bookingId);
+           booking.setBoStatus("BOOKED");
+           bookings.add(bookingRepository.save(booking));
+       }
+        return bookings;
     }
 
     private UserDTO verifyUserExist(int userId) {

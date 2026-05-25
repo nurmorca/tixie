@@ -22,9 +22,7 @@ public class BookingItems {
     private int biEventId;
     @Column(name="BI_PRICE", nullable = false)
     private BigDecimal biPrice;
-    @Column(name="BI_SEAT_NUMBER", nullable = false, length = 80)
-    private String biSeatNumber;
-    @Column(name="BO_CREATED_AT", nullable = false)
+    @Column(name="BO_CREATED_AT")
     private Timestamp biCreatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -69,14 +67,6 @@ public class BookingItems {
 
     public void setBiPrice(BigDecimal biPrice) {
         this.biPrice = biPrice;
-    }
-
-    public String getBiSeatNumber() {
-        return biSeatNumber;
-    }
-
-    public void setBiSeatNumber(String biSeatNumber) {
-        this.biSeatNumber = biSeatNumber;
     }
 
     public Timestamp getBiCreatedAt() {

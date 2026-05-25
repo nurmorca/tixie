@@ -33,10 +33,44 @@ func (ticketController *TicketController) RegisterRoutes(e *echo.Echo) {
 
 	// ticket handling
 	e.GET("/api/ticket/available/:eventId", ticketController.GetAvailableSeatsForEvent)
-	e.POST("/api/ticket/lock", ticketController.LockSeat)
-	e.POST("/api/ticket/release", ticketController.ReleaseSeat)
+	e.POST("/api/ticket/lock", ticketController.LockTickets)
+	e.POST("/api/ticket/release", ticketController.ReleaseTickets)
+	e.POST("/api/ticket/checkReservation", ticketController.CheckUserReservation)
+	e.POST("/api/ticket/completeReservation", ticketController.CompleteReservation)
 	// e.POST("/api/ticket/confirm", ticketController.CreateTicket)
 	//	e.GET("/api/ticket/user/:id", ticketController.GetAllTicketsForUser)
+}
+
+func (ticketController TicketController) CompleteReservation(c echo.Context) error {
+	var ticketIds dto.TicketIdDTO
+	err := c.Bind(&ticketIds)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	err = ticketController.ticketService.CompleteReservation(c.Request().Context(), ticketIds.TicketIDs)
+
+	if err != nil {
+		return c.JSON(http.StatusNotFound, "ticket(s) couldnt be reserved for user")
+	}
+
+	return c.JSON(http.StatusOK, "completed successfully")
+}
+
+func (ticketController TicketController) CheckUserReservation(c echo.Context) error {
+	var userBooking dto.UserBookingDTO
+	err := c.Bind(&userBooking)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	result := ticketController.ticketService.CheckUserReservations(c.Request().Context(), userBooking)
+
+	if result == false {
+		return c.JSON(http.StatusNotFound, "ticket(s) are not reserved for user")
+	}
+
+	return c.JSON(http.StatusOK, result)
 }
 
 /* func (ticketController TicketController) GetUserTicketsForEvent(c echo.Context) error {
@@ -120,28 +154,28 @@ func (ticketController TicketController) GetAvailableSeatsForEvent(c echo.Contex
 	return c.JSON(http.StatusOK, seats)
 }
 
-func (ticketController TicketController) LockSeat(c echo.Context) error {
-	var lockSeatRequest dto.TicketReservationDTO
-	err := c.Bind(&lockSeatRequest)
+func (ticketController TicketController) LockTickets(c echo.Context) error {
+	var userBooking dto.UserBookingDTO
+	err := c.Bind(&userBooking)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	err = ticketController.ticketService.LockSeat(c.Request().Context(), lockSeatRequest)
+	err = ticketController.ticketService.LockTickets(c.Request().Context(), userBooking)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 	return c.NoContent(http.StatusCreated)
 }
 
-func (ticketController TicketController) ReleaseSeat(c echo.Context) error {
-	var releaseSeatRequest dto.TicketReservationDTO
-	err := c.Bind(&releaseSeatRequest)
+func (ticketController TicketController) ReleaseTickets(c echo.Context) error {
+	var userBooking dto.UserBookingDTO
+	err := c.Bind(&userBooking)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	err = ticketController.ticketService.ReleaseSeat(c.Request().Context(), releaseSeatRequest)
+	err = ticketController.ticketService.ReleaseTickets(c.Request().Context(), userBooking)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}

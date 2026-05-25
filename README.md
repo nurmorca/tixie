@@ -8,17 +8,24 @@ a microservices-based event ticketing platform where users can register, browse 
 
 - user service: spring boot (java) + postgresql
 - ticket service: go + postgresql + redis
-- booking service (coming up): spring boot (java) + postgresql
+- booking service: spring boot (java) + postgresql
 - activity service (coming up): go + mongodb
 
 
-**infrastructure:** docker + docker compose, rabbitmq (async messaging), redis (seat locking)
+**infrastructure:** docker + docker compose, rabbitmq (async messaging) (not yet here), redis (seat locking)
 
 ---
 
 ## progress
 
 **what's cooking:** as of now, there is some inconsistency between services booking and ticket. will add features to both so they work within rhythm. will also be working on user service auth issues.
+
+
+### v0.5
+- changed the implementation of locking and releasing tickets, with special changes on dto and method names ('seat' -> 'ticket')
+- added a new endpoint for ticket service which checks if tickets are reserved for user.
+- added a logic which sets ticket statuses as sold while making a booking
+- added a confirmation logic for bookings, so that after payment the booking can be fully complete.
 
 ### v0.4
 - added restclient and its plumbing so that services can talk to each other (in booking service)

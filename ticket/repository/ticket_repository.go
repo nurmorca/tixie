@@ -18,7 +18,7 @@ type ITicketRepository interface {
 	DeleteEvent(eventId int64) error
 	UpdateDescription(eventId int64, description string) error
 	GetTicketsForEvent(id int64, isAvailable bool) ([]domain.Ticket, error)
-	UpdateSeatStatus(ctx context.Context, seatId int64, newStatus string) error
+	UpdateTicketStatus(ctx context.Context, ticketIds []int64, newStatus string) error
 	//CreateTicket(ticket domain.Ticket) error
 	GetAllTicketsForEvent(eventId int64) ([]dto.TicketDTO, error)
 	// GetAllTicketsForUser(userId int64) ([]dto.UserTicketDTO, error)
@@ -151,19 +151,20 @@ func (ticketRepository *TicketRepository) GetAllTicketsForEvent(eventId int64) (
 	return tickets, nil
 }
 
-func (ticketRepository *TicketRepository) UpdateSeatStatus(ctx context.Context, ticketId int64, newStatus string) error {
+func (ticketRepository *TicketRepository) UpdateTicketStatus(ctx context.Context, ticketIds []int64, newStatus string) error {
 	query := `UPDATE ticket SET ti_status=$1 WHERE ti_id=$2`
-	result, err := ticketRepository.Pool.Exec(
-		ctx,
-		query,
-		newStatus,
-		ticketId)
-	if err != nil {
-		return err
-	}
-
-	if result.RowsAffected() == 0 {
-		log.Error("ticket not found. ", err)
+	for _, id := range ticketIds {
+		result, err := ticketRepository.Pool.Exec(
+			ctx,
+			query,
+			newStatus,
+			id)
+		if err != nil {
+			return err
+		}
+		if result.RowsAffected() == 0 {
+			log.Error("ticket not found. ", err)
+		}
 	}
 
 	return nil

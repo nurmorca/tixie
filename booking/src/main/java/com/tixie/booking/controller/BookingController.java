@@ -1,6 +1,7 @@
 package com.tixie.booking.controller;
 
 import com.tixie.booking.data.dto.BookingRequestDTO;
+import com.tixie.booking.data.dto.ConfirmBookingDTO;
 import com.tixie.booking.data.entity.Booking;
 import com.tixie.booking.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,5 +48,9 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.createBooking(bookingRequestDTO));
     }
 
-
+    @PostMapping("/confirm")
+    public ResponseEntity<String> confirmBooking(@RequestBody ConfirmBookingDTO confirmBookingDTO) {
+        bookingService.confirmBooking(confirmBookingDTO);
+        return ResponseEntity.ok("Booking confirmed!");
+    }
 }

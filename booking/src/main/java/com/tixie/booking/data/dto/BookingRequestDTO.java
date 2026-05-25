@@ -2,26 +2,9 @@ package com.tixie.booking.data.dto;
 
 public class BookingRequestDTO {
 
-    private int ticketId;
+    private int[] ticketIds;
     private int eventId;
     private int userId;
-    private int seatId;
-
-    public int getSeatId() {
-        return seatId;
-    }
-
-    public void setSeatId(int seatId) {
-        this.seatId = seatId;
-    }
-
-    public int getTicketId() {
-        return ticketId;
-    }
-
-    public void setTicketId(int ticketId) {
-        this.ticketId = ticketId;
-    }
 
     public int getEventId() {
         return eventId;
@@ -37,5 +20,13 @@ public class BookingRequestDTO {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public int[] getTicketIds() {
+        return ticketIds;
+    }
+
+    public void setTicketIds(int[] ticketIds) {
+        this.ticketIds = ticketIds;
     }
 }

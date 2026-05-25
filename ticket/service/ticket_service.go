@@ -21,9 +21,11 @@ type ITicketService interface {
 	UpdateDescription(eventId int64, description string) error
 	GetAvailableTicketsForEvent(eventId int64) ([]domain.Ticket, error)
 	GetTicketsForEvent(eventId int64) ([]domain.Ticket, error)
-	LockSeat(ctx context.Context, lockSeatRequest dto.TicketReservationDTO) error
-	ReleaseSeat(ctx context.Context, releaseSeatRequest dto.TicketReservationDTO) error
+	LockTickets(ctx context.Context, userBooking dto.UserBookingDTO) error
+	ReleaseTickets(ctx context.Context, userBooking dto.UserBookingDTO) error
 	GetAllTicketsForEvent(eventId int64) ([]dto.TicketDTO, error)
+	CheckUserReservations(ctx context.Context, userBooking dto.UserBookingDTO) bool
+	CompleteReservation(ctx context.Context, ticketIds []int64) error
 	// CreateTicket(ticketReservation dto.TicketReservationDTO) error
 	// GetAllTicketsForUser(userId int64) ([]dto.UserTicketDTO, error)
 	// GetUserTicketsForEvent(eventId int64, userId int64) ([]dto.UserTicketDTO, error)
@@ -143,31 +145,37 @@ func (ticketService *TicketService) UpdateDescription(eventId int64, description
 	return ticketService.ticketRepository.UpdateDescription(eventId, description)
 }
 
-func (ticketService *TicketService) LockSeat(ctx context.Context, lockSeatRequest dto.TicketReservationDTO) error {
-	if lockSeatRequest.UserID == nil {
+func (ticketService *TicketService) LockTickets(ctx context.Context, userBooking dto.UserBookingDTO) error {
+	if *userBooking.UserID == 0 {
 		return errors.New("user_id value is not entered")
 	}
-	key := fmt.Sprintf("lock:%d:%d", lockSeatRequest.EventID, lockSeatRequest.SeatID)
-	ok, _ := ticketService.redisClient.SetNX(ctx, key, *lockSeatRequest.UserID, 10*time.Minute).Result()
-	if !ok {
-		return errors.New("seat already locked")
+	for _, item := range userBooking.Items {
+		key := fmt.Sprintf("lock:%d:%d", item.EventID, item.TicketID)
+		ok, _ := ticketService.redisClient.SetNX(ctx, key, userBooking.UserID, 10*time.Minute).Result()
+		if !ok {
+			return errors.New("seat already locked")
+		}
 	}
-	err := ticketService.ticketRepository.UpdateSeatStatus(ctx, lockSeatRequest.SeatID, "locked")
-	return err
+	return nil
 }
 
-func (ticketService *TicketService) ReleaseSeat(ctx context.Context, releaseSeatRequest dto.TicketReservationDTO) error {
-	err := ticketService.releaseSeat(ctx, releaseSeatRequest)
-	if err != nil {
-		return err
+func (ticketService *TicketService) CompleteReservation(ctx context.Context, ticketIds []int64) error {
+	if ticketIds == nil {
+		return errors.New("id values are not entered")
 	}
-	err = ticketService.ticketRepository.UpdateSeatStatus(ctx, releaseSeatRequest.SeatID, "available")
-	return err
+	ticketService.ticketRepository.UpdateTicketStatus(ctx, ticketIds, "sold")
+	return nil
 }
 
-func (ticketService *TicketService) releaseSeat(ctx context.Context, releaseSeatRequest dto.TicketReservationDTO) error {
-	key := fmt.Sprintf("lock:%d:%d", releaseSeatRequest.EventID, releaseSeatRequest.SeatID)
-	return ticketService.redisClient.Del(ctx, key).Err()
+func (ticketService *TicketService) ReleaseTickets(ctx context.Context, userBooking dto.UserBookingDTO) error {
+	for _, item := range userBooking.Items {
+		key := fmt.Sprintf("lock:%d:%d", item.EventID, item.TicketID)
+		err := ticketService.redisClient.Del(ctx, key).Err()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func isEventRequestValid(event domain.Event) bool {
@@ -177,20 +185,20 @@ func isEventRequestValid(event domain.Event) bool {
 	return true
 }
 
-func isTicketReservationRequestValid(ticketRes dto.TicketReservationDTO) bool {
-	if ticketRes.SeatID == 0 || ticketRes.EventID == 0 || *ticketRes.UserID == 0 {
+func isUserBookingRequestValid(userBooking dto.UserBookingDTO) bool {
+	if *userBooking.UserID == 0 || userBooking.Items == nil {
 		return false
 	}
 	return true
 }
 
-func (ticketService *TicketService) isTicketReservedForUser(ctx context.Context, ticketRes dto.TicketReservationDTO) bool {
-	key := fmt.Sprintf("lock:%d:%d", ticketRes.EventID, ticketRes.SeatID)
-	value, _ := ticketService.redisClient.Get(ctx, key).Int64()
-
-	if value == *ticketRes.UserID {
-		return true
+func (ticketService *TicketService) CheckUserReservations(ctx context.Context, userBooking dto.UserBookingDTO) bool {
+	for _, item := range userBooking.Items {
+		key := fmt.Sprintf("lock:%d:%d", item.EventID, item.TicketID)
+		value, _ := ticketService.redisClient.Get(ctx, key).Int64()
+		if value != *userBooking.UserID {
+			return false
+		}
 	}
-
-	return false
+	return true
 }
