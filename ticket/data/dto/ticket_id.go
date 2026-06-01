@@ -1,5 +1,6 @@
 package dto
 
-type TicketIdDTO struct {
-	TicketIDs []int64 `json:"ticketIds"`
+type UserTicketsDTO struct {
+	UserID    *int64  `json:"userId,omitempty"`
+	TicketIds []int64 `json:"ticketIds"`
 }

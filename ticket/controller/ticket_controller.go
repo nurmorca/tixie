@@ -1,6 +1,9 @@
 package controller
 
 import (
+	"bytes"
+	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"ticket/data/domain"
@@ -29,7 +32,6 @@ func (ticketController *TicketController) RegisterRoutes(e *echo.Echo) {
 	e.DELETE("/api/event/:id", ticketController.DeleteEvent)
 	e.GET("/api/event/:id/seats", ticketController.GetSeatsForEvent)
 	e.GET("/api/event/:id/tickets", ticketController.GetAllTicketsForEvent)
-	//	e.GET("/api/event/:eventId/user/:userId", ticketController.GetUserTicketsForEvent)
 
 	// ticket handling
 	e.GET("/api/ticket/available/:eventId", ticketController.GetAvailableSeatsForEvent)
@@ -37,18 +39,39 @@ func (ticketController *TicketController) RegisterRoutes(e *echo.Echo) {
 	e.POST("/api/ticket/release", ticketController.ReleaseTickets)
 	e.POST("/api/ticket/checkReservation", ticketController.CheckUserReservation)
 	e.POST("/api/ticket/completeReservation", ticketController.CompleteReservation)
-	// e.POST("/api/ticket/confirm", ticketController.CreateTicket)
-	//	e.GET("/api/ticket/user/:id", ticketController.GetAllTicketsForUser)
+	e.POST("/api/ticket/initiateTicketReservation", ticketController.InitiateTicketReservation)
+}
+
+func (ticketController TicketController) InitiateTicketReservation(c echo.Context) error {
+	body, _ := io.ReadAll(c.Request().Body)
+	log.Printf("Raw body: %s", string(body))
+
+	c.Request().Body = io.NopCloser(bytes.NewBuffer(body))
+
+	var userTickets dto.UserTicketsDTO
+	err := c.Bind(&userTickets)
+	if err != nil {
+		log.Printf("Bind error: %v", err)
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	log.Printf("Received: %+v", userTickets) // check if fields are populated
+	bookingTickets, err := ticketController.ticketService.InitiateTicketReservation(c.Request().Context(), userTickets)
+	if err != nil {
+		log.Printf("Service error: %v", err)
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	return c.JSON(http.StatusOK, bookingTickets)
 }
 
 func (ticketController TicketController) CompleteReservation(c echo.Context) error {
-	var ticketIds dto.TicketIdDTO
-	err := c.Bind(&ticketIds)
+	var userTickets dto.UserTicketsDTO
+	err := c.Bind(&userTickets)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	err = ticketController.ticketService.CompleteReservation(c.Request().Context(), ticketIds.TicketIDs)
+	err = ticketController.ticketService.CompleteReservation(c.Request().Context(), userTickets)
 
 	if err != nil {
 		return c.JSON(http.StatusNotFound, "ticket(s) couldnt be reserved for user")
@@ -58,7 +81,7 @@ func (ticketController TicketController) CompleteReservation(c echo.Context) err
 }
 
 func (ticketController TicketController) CheckUserReservation(c echo.Context) error {
-	var userBooking dto.UserBookingDTO
+	var userBooking dto.UserTicketsDTO
 	err := c.Bind(&userBooking)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -73,34 +96,6 @@ func (ticketController TicketController) CheckUserReservation(c echo.Context) er
 	return c.JSON(http.StatusOK, result)
 }
 
-/* func (ticketController TicketController) GetUserTicketsForEvent(c echo.Context) error {
-	param1 := c.Param("eventId")
-	eventId, _ := strconv.ParseInt(param1, 10, 64)
-	param2 := c.Param("userId")
-	userId, _ := strconv.ParseInt(param2, 10, 64)
-
-	tixes, err := ticketController.ticketService.GetUserTicketsForEvent(eventId, userId)
-
-	if err != nil {
-		return c.JSON(http.StatusNotFound, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, tixes)
-} */
-
-/*func (ticketController TicketController) GetAllTicketsForUser(c echo.Context) error {
-	param := c.Param("id")
-	userId, _ := strconv.ParseInt(param, 10, 64)
-
-	tixes, err := ticketController.ticketService.GetAllTicketsForEvent(userId)
-
-	if err != nil {
-		return c.JSON(http.StatusNotFound, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, tixes)
-} */
-
 func (ticketController TicketController) GetAllTicketsForEvent(c echo.Context) error {
 	param := c.Param("id")
 	eventId, _ := strconv.ParseInt(param, 10, 64)
@@ -113,20 +108,6 @@ func (ticketController TicketController) GetAllTicketsForEvent(c echo.Context) e
 
 	return c.JSON(http.StatusOK, tixes)
 }
-
-/* func (ticketController TicketController) CreateTicket(c echo.Context) error {
-	var purchaseTicketRequest dto.TicketReservationDTO
-	err := c.Bind(&purchaseTicketRequest)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
-
-	err = ticketController.ticketService.CreateTicket(purchaseTicketRequest)
-	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, err.Error())
-	}
-	return c.NoContent(http.StatusCreated)
-} */
 
 func (ticketController TicketController) GetSeatsForEvent(c echo.Context) error {
 	param := c.Param("id")
@@ -155,7 +136,7 @@ func (ticketController TicketController) GetAvailableSeatsForEvent(c echo.Contex
 }
 
 func (ticketController TicketController) LockTickets(c echo.Context) error {
-	var userBooking dto.UserBookingDTO
+	var userBooking dto.UserTicketsDTO
 	err := c.Bind(&userBooking)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -169,7 +150,7 @@ func (ticketController TicketController) LockTickets(c echo.Context) error {
 }
 
 func (ticketController TicketController) ReleaseTickets(c echo.Context) error {
-	var userBooking dto.UserBookingDTO
+	var userBooking dto.UserTicketsDTO
 	err := c.Bind(&userBooking)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())

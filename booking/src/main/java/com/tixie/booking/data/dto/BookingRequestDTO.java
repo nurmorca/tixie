@@ -1,17 +1,14 @@
 package com.tixie.booking.data.dto;
 
+import java.util.Arrays;
+
 public class BookingRequestDTO {
 
     private int[] ticketIds;
-    private int eventId;
     private int userId;
 
-    public int getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(int eventId) {
-        this.eventId = eventId;
+    public BookingRequestDTO(int[] ticketIds) {
+        this.ticketIds = ticketIds;
     }
 
     public int getUserId() {
@@ -28,5 +25,13 @@ public class BookingRequestDTO {
 
     public void setTicketIds(int[] ticketIds) {
         this.ticketIds = ticketIds;
+    }
+
+    @Override
+    public String toString() {
+        return "BookingRequestDTO{" +
+                "ticketIds=" + Arrays.toString(ticketIds) +
+                ", userId=" + userId +
+                '}';
     }
 }

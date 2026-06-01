@@ -26,6 +26,7 @@ a microservices-based event ticketing platform where users can register, browse 
 - added a new endpoint for ticket service which checks if tickets are reserved for user.
 - added a logic which sets ticket statuses as sold while making a booking
 - added a confirmation logic for bookings, so that after payment the booking can be fully complete.
+- fixed booking flow, now it reaches ticket service and gets booking item information there
 
 ### v0.4
 - added restclient and its plumbing so that services can talk to each other (in booking service)

@@ -1,7 +1,6 @@
 package com.tixie.booking.service;
 
 import com.tixie.booking.data.dto.BookingRequestDTO;
-import com.tixie.booking.data.dto.ConfirmBookingDTO;
 import com.tixie.booking.data.entity.Booking;
 
 import java.util.List;
@@ -18,5 +17,5 @@ public interface BookingService {
 
     Booking createBooking(BookingRequestDTO bookingRequestDTO);
 
-    List<Booking> confirmBooking(ConfirmBookingDTO confirmBookingDTO);
+    Booking confirmBooking(int BookingId);
 }

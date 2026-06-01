@@ -19,10 +19,8 @@ type ITicketRepository interface {
 	UpdateDescription(eventId int64, description string) error
 	GetTicketsForEvent(id int64, isAvailable bool) ([]domain.Ticket, error)
 	UpdateTicketStatus(ctx context.Context, ticketIds []int64, newStatus string) error
-	//CreateTicket(ticket domain.Ticket) error
 	GetAllTicketsForEvent(eventId int64) ([]dto.TicketDTO, error)
-	// GetAllTicketsForUser(userId int64) ([]dto.UserTicketDTO, error)
-	// GetUserTicketsForEvent(eventId int64, userId int64) ([]dto.UserTicketDTO, error)
+	GetBookingTickets(userTickets dto.UserTicketsDTO) ([]dto.BookingTicketDTO, error)
 }
 
 type TicketRepository struct {
@@ -32,68 +30,6 @@ type TicketRepository struct {
 func NewTicketRepository(pool *pgxpool.Pool) ITicketRepository {
 	return &TicketRepository{Pool: pool}
 }
-
-/* func (ticketRepository *TicketRepository) GetUserTicketsForEvent(eventId int64, userId int64) ([]dto.UserTicketDTO, error) {
-	ctx := context.Background()
-	var tickets []dto.UserTicketDTO
-	query := `SELECT
-	t.ti_id,
-	es.es_id,
-	t.ti_user_id,
-    s.se_seat_row,
-    s.se_seat_number,
-    s.se_seat_type,
-    es.es_status,
-    es.es_price,
-	e.ev_host,
-	e.ev_name,
-	e.ev_venue,
-	e.ev_description,
-	e.ev_datetime
-    FROM ticket t
-    JOIN event_seat es ON t.ti_seat_id = es.es_id
-	JOIN seat s ON es.es_seat_id = s.se_id
-	JOIN events e ON t.ti_event_id = e.ev_id
-    WHERE t.ti_event_id = $1 AND t.ti_user_id = $2
-	ORDER BY s.se_seat_row, s.se_seat_number`
-
-	err := pgxscan.Select(ctx, ticketRepository.Pool, &tickets, query, eventId, userId)
-	if err != nil {
-		return nil, err
-	}
-	return tickets, nil
-} */
-
-/* func (ticketRepository *TicketRepository) GetAllTicketsForUser(userId int64) ([]dto.UserTicketDTO, error) {
-	ctx := context.Background()
-	var tickets []dto.UserTicketDTO
-	query := `SELECT
-	t.ti_id,
-	es.es_id,
-	t.ti_user_id,
-    s.se_seat_row,
-    s.se_seat_number,
-    s.se_seat_type,
-    es.es_status,
-    es.es_price,
-	e.ev_host,
-	e.ev_name,
-	e.ev_venue,
-	e.ev_description,
-	e.ev_datetime
-    FROM ticket t
-    JOIN event_seat es ON t.ti_seat_id = es.es_id
-	JOIN seat s ON es.es_seat_id = s.se_id
-	JOIN events e ON t.ti_event_id = e.ev_id
-    WHERE t.ti_user_id = $1
-	ORDER BY s.se_seat_row, s.se_seat_number`
-
-	err := pgxscan.Select(ctx, ticketRepository.Pool, &tickets, query, userId)
-	if err != nil {
-		return nil, err
-	}
-	return tickets, nil
-} */
 
 func (ticketRepository *TicketRepository) GetTicketById(eventId int64) ([]dto.TicketDTO, error) {
 	ctx := context.Background()
@@ -120,6 +56,25 @@ func (ticketRepository *TicketRepository) GetTicketById(eventId int64) ([]dto.Ti
 	if err != nil {
 		return nil, err
 	}
+	return tickets, nil
+}
+
+func (ticketRepository *TicketRepository) GetBookingTickets(userTickets dto.UserTicketsDTO) ([]dto.BookingTicketDTO, error) {
+	ctx := context.Background()
+	var tickets []dto.BookingTicketDTO
+	query := `SELECT
+	t.ti_id,
+    t.ti_status,
+    t.ti_price,
+	t.ti_event_id
+    FROM ticket t
+    WHERE t.ti_id = ANY($1)`
+
+	err := pgxscan.Select(ctx, ticketRepository.Pool, &tickets, query, userTickets.TicketIds)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(tickets)
 	return tickets, nil
 }
 
@@ -152,21 +107,18 @@ func (ticketRepository *TicketRepository) GetAllTicketsForEvent(eventId int64) (
 }
 
 func (ticketRepository *TicketRepository) UpdateTicketStatus(ctx context.Context, ticketIds []int64, newStatus string) error {
-	query := `UPDATE ticket SET ti_status=$1 WHERE ti_id=$2`
-	for _, id := range ticketIds {
-		result, err := ticketRepository.Pool.Exec(
-			ctx,
-			query,
-			newStatus,
-			id)
-		if err != nil {
-			return err
-		}
-		if result.RowsAffected() == 0 {
-			log.Error("ticket not found. ", err)
-		}
+	query := `UPDATE ticket SET ti_status=$1 WHERE ti_id = ANY($2)`
+	result, err := ticketRepository.Pool.Exec(
+		ctx,
+		query,
+		newStatus,
+		ticketIds)
+	if err != nil {
+		return err
 	}
-
+	if result.RowsAffected() == 0 {
+		log.Error("tickets not found. ", err)
+	}
 	return nil
 }
 
@@ -198,25 +150,6 @@ func (ticketRepository *TicketRepository) GetTicketsForEvent(eventId int64, isAv
 	}
 	return tickets, nil
 }
-
-/* func (ticketRepository *TicketRepository) CreateTicket(ticket domain.Ticket) error {
-	ctx := context.Background()
-	query := `INSERT INTO ticket (ti_event_id, ti_seat_id, ti_user_id) VALUES ($1, $2, $3) RETURNING ti_id, ti_created_at`
-
-	err := ticketRepository.Pool.QueryRow(
-		ctx,
-		query,
-		ticket.TiEventID,
-		ticket.TiSeatID,
-		ticket.TiUserID).Scan(&ticket.TiID, &ticket.TiCreatedAt)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Ticket created: ", ticket)
-
-	return nil
-} */
 
 func (ticketRepository *TicketRepository) GetAllEvents() ([]domain.Event, error) {
 	ctx := context.Background()
