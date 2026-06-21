@@ -87,6 +87,10 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking confirmBooking(int bookingId) {
         Booking booking = getBookingById(bookingId);
+        int[] ticketIds = booking.getBookingItems().stream().mapToInt(BookingItems::getBiTicketId).toArray();
+        BookingRequestDTO requestDTO = new BookingRequestDTO(ticketIds);
+        requestDTO.setUserId(booking.getBoUserId());
+        ticketApiClient.confirmBooking(requestDTO);
         booking.setBoStatus("COMPLETE");
         booking = bookingRepository.save(booking);
         return booking;

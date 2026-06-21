@@ -47,7 +47,7 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.createBooking(bookingRequestDTO));
     }
 
-    @PostMapping("{id}/confirm")
+    @GetMapping("{id}/confirm")
     public ResponseEntity<Booking> confirmBooking(@PathVariable int bookingId) {
         return ResponseEntity.ok(bookingService.confirmBooking(bookingId));
     }

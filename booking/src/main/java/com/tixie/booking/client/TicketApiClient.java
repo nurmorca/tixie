@@ -20,14 +20,6 @@ public class TicketApiClient {
         this.restClient = restClient;
     }
 
-    public String lockSeat(BookingRequestDTO bookingRequestDTO) {
-        return restClient.post()
-                .uri("/api/ticket/lock")
-                .body(bookingRequestDTO)
-                .retrieve()
-                .body(String.class);
-    }
-
     public String confirmBooking(BookingRequestDTO dto) {
         return restClient.post()
                 .uri("/api/ticket/completeReservation")
@@ -37,7 +29,6 @@ public class TicketApiClient {
     }
 
     public List<TicketsDTO> getTickets(BookingRequestDTO dto) {
-        log.info("Sending booking request: {}", dto.toString());
         TicketsDTO[] tixes = restClient.post()
                 .uri("/api/ticket/initiateTicketReservation")
                 .body(dto)
