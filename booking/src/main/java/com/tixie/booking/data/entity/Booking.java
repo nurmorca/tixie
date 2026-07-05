@@ -1,15 +1,19 @@
 package com.tixie.booking.data.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name="BOOKING")
 public class Booking {
+
+    public static final String PAYMENT_EXPECTED = "PAYMENT_EXPECTED";
+    public static final String ABANDONED = "ABANDONED";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="BO_ID")
@@ -22,8 +26,11 @@ public class Booking {
     private String boStatus;
     @Column(name="BO_CREATED_AT")
     private Timestamp boCreatedAt;
+    @Column(name="BO_LAST_PAYMENT_ATTEMPT_AT")
+    private Timestamp boLastPaymentAttemptAt;
 
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY)
+    @JsonManagedReference("booking-bookingItems")
     private List<BookingItems> boBookingItems;
 
     public List<BookingItems> getBookingItems() {
@@ -72,6 +79,14 @@ public class Booking {
 
     public void setBoCreatedAt(Timestamp boCreatedAt) {
         this.boCreatedAt = boCreatedAt;
+    }
+
+    public Timestamp getBoLastPaymentAttemptAt() {
+        return boLastPaymentAttemptAt;
+    }
+
+    public void setBoLastPaymentAttemptAt(Timestamp boLastPaymentAttemptAt) {
+        this.boLastPaymentAttemptAt = boLastPaymentAttemptAt;
     }
 }
 

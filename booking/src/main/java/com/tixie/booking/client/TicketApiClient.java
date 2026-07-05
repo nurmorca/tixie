@@ -34,7 +34,14 @@ public class TicketApiClient {
                 .body(dto)
                 .retrieve()
                 .body(TicketsDTO[].class);
-
         return List.of(tixes);
+    }
+
+    public String freeAbandonedTickets(BookingRequestDTO dto) {
+        return restClient.post()
+                .uri("/api/ticket/freeTickets")
+                .body(dto)
+                .retrieve()
+                .body(String.class);
     }
 }

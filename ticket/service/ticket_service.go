@@ -12,6 +12,10 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const STATUS_AVAILABLE string = "AVAILABLE"
+const STATUS_SOLD string = "SOLD"
+const STATUS_RESERVED string = "RESERVED"
+
 // TODO: separate validation logic
 type ITicketService interface {
 	GetAllEvents() ([]domain.Event, error)
@@ -25,15 +29,25 @@ type ITicketService interface {
 	ReleaseTickets(ctx context.Context, userBooking dto.UserTicketsDTO) error
 	GetAllTicketsForEvent(eventId int64) ([]dto.TicketDTO, error)
 	CheckUserReservations(ctx context.Context, userBooking dto.UserTicketsDTO) bool
-	UpdateTicketStatus(ctx context.Context, ticketIds []int64, paymentConfirmed bool) error
+	UpdateTicketStatus(ctx context.Context, ticketIds []int64, status string) error
 	GetBookingTickets(ctx context.Context, userTickets dto.UserTicketsDTO) ([]dto.BookingTicketDTO, error)
 	InitiateTicketReservation(ctx context.Context, userTickets dto.UserTicketsDTO) ([]dto.BookingTicketDTO, error)
 	CompleteReservation(ctx context.Context, userTickets dto.UserTicketsDTO) error
+	FreeTickets(ctx context.Context, userTickets dto.UserTicketsDTO) error
 }
 
 type TicketService struct {
 	ticketRepository repository.ITicketRepository
 	redisClient      *redis.Client
+}
+
+func (ticketService *TicketService) FreeTickets(ctx context.Context, userTickets dto.UserTicketsDTO) error {
+	err := ticketService.UpdateTicketStatus(ctx, userTickets.TicketIds, STATUS_AVAILABLE)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NewTicketService(repository repository.ITicketRepository, redisClient *redis.Client) ITicketService {
@@ -49,12 +63,12 @@ func (ticketService *TicketService) CompleteReservation(ctx context.Context, use
 		return err
 	}
 
-	id := checkStatusOfTickets(bookingTickets, "AVAILABLE")
+	id := checkStatusOfTickets(bookingTickets, STATUS_AVAILABLE)
 	if id != 0 {
 		return errors.New(fmt.Sprintf("Ticket with ID %d not reserved for user!", id))
 	}
 
-	err = ticketService.UpdateTicketStatus(ctx, userTickets.TicketIds, true)
+	err = ticketService.UpdateTicketStatus(ctx, userTickets.TicketIds, STATUS_SOLD)
 	if err != nil {
 		return err
 	}
@@ -72,12 +86,12 @@ func (ticketService *TicketService) InitiateTicketReservation(ctx context.Contex
 		return nil, err
 	}
 
-	id := checkStatusOfTickets(bookingTickets, "RESERVED")
+	id := checkStatusOfTickets(bookingTickets, STATUS_RESERVED)
 	if id != 0 {
 		return nil, errors.New(fmt.Sprintf("Ticket with ID %d already reserved!", id))
 	}
 
-	err = ticketService.UpdateTicketStatus(ctx, userTickets.TicketIds, false)
+	err = ticketService.UpdateTicketStatus(ctx, userTickets.TicketIds, STATUS_RESERVED)
 	if err != nil {
 		return nil, err
 	}
@@ -163,15 +177,11 @@ func (ticketService *TicketService) LockTickets(ctx context.Context, userTicket 
 	return nil
 }
 
-func (ticketService *TicketService) UpdateTicketStatus(ctx context.Context, ticketIds []int64, paymentConfirmed bool) error {
+func (ticketService *TicketService) UpdateTicketStatus(ctx context.Context, ticketIds []int64, status string) error {
 	if ticketIds == nil {
 		return errors.New("id values are not entered")
 	}
-	if paymentConfirmed {
-		ticketService.ticketRepository.UpdateTicketStatus(ctx, ticketIds, "SOLD") //TODO:: CREATE AN ENUM OR A STATIC FIELDS FOR THESE
-	} else {
-		ticketService.ticketRepository.UpdateTicketStatus(ctx, ticketIds, "RESERVED")
-	}
+	ticketService.ticketRepository.UpdateTicketStatus(ctx, ticketIds, status)
 
 	return nil
 }

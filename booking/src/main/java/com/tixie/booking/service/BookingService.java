@@ -18,4 +18,6 @@ public interface BookingService {
     Booking createBooking(BookingRequestDTO bookingRequestDTO);
 
     Booking confirmBooking(int BookingId);
+
+    void updateLastPaymentAttemptTimeForBooking(int bookingId);
 }

@@ -1,13 +1,10 @@
 package com.tixie.booking;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootTest
+import static org.assertj.core.api.Assertions.assertThat;
+
 class BookingApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
 
 }

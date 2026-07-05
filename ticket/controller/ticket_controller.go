@@ -40,12 +40,11 @@ func (ticketController *TicketController) RegisterRoutes(e *echo.Echo) {
 	e.POST("/api/ticket/checkReservation", ticketController.CheckUserReservation)
 	e.POST("/api/ticket/completeReservation", ticketController.CompleteReservation)
 	e.POST("/api/ticket/initiateTicketReservation", ticketController.InitiateTicketReservation)
+	e.POST("/api/ticket/freeTickets", ticketController.FreeTickets)
 }
 
-func (ticketController TicketController) InitiateTicketReservation(c echo.Context) error {
+func (ticketController TicketController) FreeTickets(c echo.Context) error {
 	body, _ := io.ReadAll(c.Request().Body)
-	log.Printf("Raw body: %s", string(body))
-
 	c.Request().Body = io.NopCloser(bytes.NewBuffer(body))
 
 	var userTickets dto.UserTicketsDTO
@@ -54,7 +53,25 @@ func (ticketController TicketController) InitiateTicketReservation(c echo.Contex
 		log.Printf("Bind error: %v", err)
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	log.Printf("Received: %+v", userTickets) // check if fields are populated
+	err = ticketController.ticketService.FreeTickets(c.Request().Context(), userTickets)
+	if err != nil {
+		log.Printf("Service error: %v", err)
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return nil
+}
+
+func (ticketController TicketController) InitiateTicketReservation(c echo.Context) error {
+	body, _ := io.ReadAll(c.Request().Body)
+	c.Request().Body = io.NopCloser(bytes.NewBuffer(body))
+
+	var userTickets dto.UserTicketsDTO
+	err := c.Bind(&userTickets)
+	if err != nil {
+		log.Printf("Bind error: %v", err)
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
 	bookingTickets, err := ticketController.ticketService.InitiateTicketReservation(c.Request().Context(), userTickets)
 	if err != nil {
 		log.Printf("Service error: %v", err)

@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,6 +59,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public void updateLastPaymentAttemptTimeForBooking(int bookingId) {
+        Booking booking  = getBookingById(bookingId);
+        booking.setBoLastPaymentAttemptAt(Timestamp.valueOf(LocalDateTime.now()));
+        bookingRepository.save(booking);
+    }
+
+    @Override
     public String getStatusForBooking(int bookingId) {
         return bookingRepository.getBookingStatusById(bookingId);
     }
@@ -72,6 +81,7 @@ public class BookingServiceImpl implements BookingService {
         newBooking.setBoStatus("PAYMENT_EXPECTED");
         BigDecimal totalPrice = tickets.stream().map(TicketsDTO::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
         newBooking.setBoTotalPrice(totalPrice);
+        newBooking.setBoCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
         Booking booking =  bookingRepository.save(newBooking);
         for (TicketsDTO ticket : tickets) {
             BookingItems item = new BookingItems();

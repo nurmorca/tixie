@@ -1,6 +1,7 @@
 package com.tixie.booking.data.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ public class BookingItems {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "BI_BOOKING_ID", referencedColumnName = "BO_ID", nullable = false, insertable = false, updatable = false)
+    @JsonBackReference("booking-bookingItems")
     private Booking booking;
 
     public int getBiId() {

@@ -51,4 +51,10 @@ public class BookingController {
     public ResponseEntity<Booking> confirmBooking(@PathVariable int bookingId) {
         return ResponseEntity.ok(bookingService.confirmBooking(bookingId));
     }
+
+    @GetMapping("{id}/attemptPayment")
+    public ResponseEntity<String> updateLastPaymentAttemptTime(@PathVariable int id) {
+        bookingService.updateLastPaymentAttemptTimeForBooking(id);
+        return ResponseEntity.ok("timeUpdated");
+    }
 }
