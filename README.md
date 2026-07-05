@@ -23,7 +23,7 @@ a microservices-based event ticketing platform where users can register, browse 
 ### v0.6
 - added a new state to booking which is: 'abandoned'. abandoned bookings are the ones that user didn't complete the payment for and didn't make an attempt on it for the last 5 minutes. 
 - added new fields for booking entity for this change, with changes to service and controller side.
-- also added a call to ticket service that which sets the tickets assigned to ticket from 'reserved' to 'available' again if the booking is now abandoned.
+- also added a call to ticket service which sets the tickets assigned to booking from 'reserved' to 'available' again if the booking is now abandoned.
 - tested both services to make sure they are working in rhythm together.
 
 
