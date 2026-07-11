@@ -35,7 +35,7 @@ public class JobsService {
        for (Booking b : unpaidBookings) {
            int[] itemIds = b.getBookingItems().stream().mapToInt(BookingItems::getBiTicketId).toArray();
            BookingRequestDTO dto = new BookingRequestDTO(itemIds);
-           ticketApiClient.freeAbandonedTickets(dto);
+           ticketApiClient.freeTickets(dto);
            b.setBoStatus(Booking.ABANDONED);
            bookingRepository.save(b);
        }

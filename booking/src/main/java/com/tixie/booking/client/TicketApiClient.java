@@ -37,7 +37,7 @@ public class TicketApiClient {
         return List.of(tixes);
     }
 
-    public String freeAbandonedTickets(BookingRequestDTO dto) {
+    public String freeTickets(BookingRequestDTO dto) {
         return restClient.post()
                 .uri("/api/ticket/freeTickets")
                 .body(dto)

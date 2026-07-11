@@ -52,6 +52,8 @@ public class BookingServiceImpl implements BookingService {
         Optional<Booking> canceledBooking  = bookingRepository.findById(bookingId);
         if (canceledBooking.isPresent()) {
             Booking booking = canceledBooking.get();
+            BookingRequestDTO dto = new BookingRequestDTO(booking.getBookingItems().stream().mapToInt(BookingItems::getBiTicketId).toArray());
+            ticketApiClient.freeTickets(dto);
             booking.setBoStatus("CANCELLED");
             bookingRepository.save(booking);
         }
