@@ -6,6 +6,7 @@ import com.tixie.user.data.dto.UserResponse;
 import com.tixie.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
     public ResponseEntity<List<UserResponse>> findAllUsers() {
         List<UserResponse> userList = userService.findAll();
@@ -33,23 +35,24 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUser(@PathVariable int id) {
         UserResponse response = userService.findById(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     @PatchMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable int id, @RequestBody UserRegistrationRequest request) {
         UserResponse response = userService.updateUser(id, request);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/deleteUser")
-    public ResponseEntity<String> deleteUser(@RequestParam("id") int id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable int id) {
         userService.deleteById(id);
         return ResponseEntity.ok("User deleted successfully.");
     }
-
-
 }

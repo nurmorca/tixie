@@ -7,6 +7,7 @@ import com.tixie.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -17,12 +18,12 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService{
 
     private UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl (UserRepository repository) {
+    public UserServiceImpl (UserRepository repository, PasswordEncoder passwordEncoder) {
         this.userRepository = repository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -97,6 +98,7 @@ public class UserServiceImpl implements UserService{
         user.setUsEmail(request.getEmail());
         user.setUsPhoneNumber(request.getPhoneNumber());
         user.setUsPassword(request.getPassword());
+        user.setUsRole(User.USER_ROLE_USER);
         return user;
     }
 

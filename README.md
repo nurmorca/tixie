@@ -18,7 +18,10 @@ a microservices-based event ticketing platform where users can register, browse 
 
 ## progress
 
-**what's cooking:** working on user service auth issues. writing tests.
+**what's cooking:** aligning user auth with other services! thank you.
+
+### v0.7
+- added auth to user service. 
 
 ### v0.6
 - added a new state to booking which is: 'abandoned'. abandoned bookings are the ones that user didn't complete the payment for and didn't make an attempt on it for the last 5 minutes. 

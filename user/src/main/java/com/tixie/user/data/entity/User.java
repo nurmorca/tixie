@@ -8,6 +8,10 @@ import jakarta.persistence.*;
 @Table(name="USERS")
 public class User {
 
+    public static final String USER_ROLE_USER = "USER";
+    public static final String USER_ROLE_ADMIN = "ADMIN";
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="US_ID")
@@ -26,6 +30,9 @@ public class User {
     private Timestamp usUpdatedAt;
     @Column(name="US_PASSWORD", nullable = false, length = 200)
     private String usPassword;
+    @Column(name="US_ROLE", nullable = false, length = 200)
+    private String usRole;
+
 
     public int getUsId() {
         return usId;
@@ -89,5 +96,13 @@ public class User {
 
     public void setUsPassword(String usPassword) {
         this.usPassword = usPassword;
+    }
+
+    public String getUsRole() {
+        return usRole;
+    }
+
+    public void setUsRole(String usRole) {
+        this.usRole = usRole;
     }
 }

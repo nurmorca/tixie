@@ -23,6 +23,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://user-postgres:5432/userdb
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin123
+      JWT_SECRET: dev-only-replace-me-with-a-long-random-value-1234567890
     depends_on:
       - user-postgres
 
